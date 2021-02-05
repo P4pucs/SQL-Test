@@ -44,10 +44,15 @@ CREATE TRIGGER before_trigger BEFORE INSERT ON relations
 
 CREATE OR REPLACE FUNCTION refresh_end_date() RETURNS trigger AS $refresh_end_date$
 	BEGIN
-
-		update relations
-		set ended = NEW.date_of_death
-		where NEW.id in(patient1_id, patient2_id) and ended > NEW.date_of_death;
+		IF NEW.date_of_death ISNULL 
+		THEN
+			--nothing
+		ELSE 
+			UPDATE relations
+			SET ended = NEW.date_of_death
+			WHERE NEW.id IN(patient1_id, patient2_id) AND (ended > NEW.date_of_death OR ended ISNULL);
+			
+		END IF;
 		
 		RETURN NEW;
     END;
